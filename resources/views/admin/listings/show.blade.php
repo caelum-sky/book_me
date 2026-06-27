@@ -19,7 +19,7 @@
             </div>
         </div>
 
-        @if($listing->images->isNotEmpty())
+        @if($listing->gallery()->isNotEmpty())
             <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:18px;">
                 @foreach($listing->images->take(4) as $image)
                     <div style="aspect-ratio:1;border-radius:10px;overflow:hidden;background:var(--panel);">

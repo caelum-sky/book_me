@@ -9,7 +9,7 @@ class ListingPolicy
 {
     public function viewAny(User $user): bool
     {
-        return true; // published listings are public; owners/admin see drafts via scoped queries
+        return true;
     }
 
     public function view(User $user, Listing $listing): bool
@@ -23,6 +23,11 @@ class ListingPolicy
 
     public function create(User $user): bool
     {
+        // Super-admin can create a listing for any approved business.
+        if ($user->isSuperAdmin()) {
+            return true;
+        }
+
         return $user->isBusinessOwner() && $user->isApproved() && $user->business?->isApproved();
     }
 

@@ -19,7 +19,13 @@ class BusinessPolicy
 
     public function create(User $user): bool
     {
-        // Any verified business_owner may register one business; super-admin must approve it after.
+        // Super-admin can create a business for any owner at any time.
+        // A business owner may only register their own single business,
+        // and only if they don't already have one.
+        if ($user->isSuperAdmin()) {
+            return true;
+        }
+
         return $user->isBusinessOwner() && $user->hasVerifiedEmail() && ! $user->business()->exists();
     }
 

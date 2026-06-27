@@ -114,7 +114,15 @@ Route::middleware(['auth', 'verified', 'role:super_admin'])->prefix('admin')->na
     Route::post('businesses/{business}/approve', [BusinessApprovalController::class, 'approve'])->name('businesses.approve');
     Route::post('businesses/{business}/reject', [BusinessApprovalController::class, 'reject'])->name('businesses.reject');
     Route::post('businesses/{business}/suspend', [BusinessApprovalController::class, 'suspend'])->name('businesses.suspend');
+Route::post('businesses', [BusinessApprovalController::class, 'store'])->name('businesses.store');
+    Route::put('businesses/{business}', [BusinessApprovalController::class, 'update'])->name('businesses.update');
+    Route::delete('businesses/{business}', [BusinessApprovalController::class, 'destroy'])->name('businesses.destroy');
 
+    Route::post('listings', [ListingApprovalController::class, 'store'])->name('listings.store');
+    Route::put('listings/{listing}', [ListingApprovalController::class, 'update'])->name('listings.update');
+    Route::delete('listings/{listing}', [ListingApprovalController::class, 'destroy'])->name('listings.destroy');
+    Route::post('listings/{listing}/units', [ListingApprovalController::class, 'storeUnit'])->name('listings.units.store');
+    Route::delete('listings/{listing}/units/{unit}', [ListingApprovalController::class, 'destroyUnit'])->name('listings.units.destroy');
     Route::get('listings', [ListingApprovalController::class, 'index'])->name('listings.index');
     Route::get('listings/{listing}', [ListingApprovalController::class, 'show'])->name('listings.show');
     Route::post('listings/{listing}/approve', [ListingApprovalController::class, 'approve'])->name('listings.approve');
