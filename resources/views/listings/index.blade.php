@@ -53,9 +53,9 @@
                             <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--text-tertiary);font-size:13px;">No photo yet</div>
                         @endif
 
-                        @if($listing->images->count() > 1)
+                        @if($listing->gallery()->count() > 1)
                             <div style="position:absolute;bottom:10px;left:0;right:0;display:flex;justify-content:center;gap:4px;">
-                                @foreach($listing->images->take(5) as $i => $img)
+                                @foreach($listing->gallery()->take(5) as $i => $img)
                                     <span style="width:5px;height:5px;border-radius:50%;background:{{ $i === 0 ? 'white' : 'rgba(255,255,255,0.5)' }};"></span>
                                 @endforeach
                             </div>

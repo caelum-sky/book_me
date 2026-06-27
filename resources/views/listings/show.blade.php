@@ -2,22 +2,22 @@
 
     <a href="{{ route('listings.index') }}" style="font-size:12.5px;color:var(--text-tertiary);text-decoration:none;display:inline-block;margin:14px 0;">&larr; Back to search</a>
 
-    @if($listing->images->isNotEmpty())
+    @if($listing->gallery()->isNotEmpty())
         <div id="photo-grid" style="display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(2,140px);gap:6px;border-radius:16px;overflow:hidden;margin-bottom:24px;cursor:pointer;">
             <div style="grid-column:1/3;grid-row:1/3;" onclick="openLightbox(0)">
-                <img src="{{ $listing->images->first()->url() }}" style="width:100%;height:100%;object-fit:cover;" loading="lazy">
+                <img src="{{ $listing->gallery()->first()->url() }}" style="width:100%;height:100%;object-fit:cover;" loading="lazy">
             </div>
-            @foreach($listing->images->skip(1)->take(4) as $i => $image)
+            @foreach($listing->gallery()->skip(1)->take(4) as $i => $image)
                 <div onclick="openLightbox({{ $i + 1 }})" style="position:relative;">
                     <img src="{{ $image->url() }}" style="width:100%;height:100%;object-fit:cover;" loading="lazy">
-                    @if($i === 3 && $listing->images->count() > 5)
+                    @if($i === 3 && $listing->gallery()->count() > 5)
                         <div style="position:absolute;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:14px;">
-                            +{{ $listing->images->count() - 5 }} photos
+                            +{{ $listing->gallery()->count() - 5 }} photos
                         </div>
                     @endif
                 </div>
             @endforeach
-            @for($i = $listing->images->count(); $i < 5; $i++)
+            @for($i = $listing->gallery()->count(); $i < 5; $i++)
                 <div style="background:var(--panel-2);"></div>
             @endfor
         </div>
@@ -32,7 +32,7 @@
         </div>
 
         <script>
-            const lightboxImages = @json($listing->images->map(fn($img) => $img->url()));
+            const lightboxImages = @json($listing->gallery()->map(fn($img) => $img->url())->values());
             let lightboxIndex = 0;
 
             function openLightbox(index) {
