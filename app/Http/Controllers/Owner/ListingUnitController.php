@@ -53,4 +53,12 @@ class ListingUnitController extends Controller
 
         return back()->with('status', 'Unit removed.');
     }
+
+    public function createReview(Booking $booking): View
+{
+    $this->authorize('view', $booking);
+    $booking->load(['listing', 'business']);
+
+    return view('bookings.review', compact('booking'));
+}
 }

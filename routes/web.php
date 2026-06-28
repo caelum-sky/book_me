@@ -68,9 +68,12 @@ Route::middleware(['auth', 'verified', 'role:customer'])->group(function () {
     Route::get('listings/{listing:slug}/book', [BookingController::class, 'create'])->name('bookings.create');
     Route::post('listings/{listing:slug}/book', [BookingController::class, 'store'])->name('bookings.store');
 
-    Route::get('my-bookings', [BookingController::class, 'index'])->name('bookings.index');
-    Route::get('my-bookings/{booking}', [BookingController::class, 'show'])->name('bookings.show');
-    Route::post('my-bookings/{booking}/cancel', [BookingController::class, 'cancel'])->name('bookings.cancel');
+   Route::get('my-bookings', [BookingController::class, 'index'])->name('bookings.index');
+Route::get('my-bookings/calendar', [BookingController::class, 'calendar'])->name('bookings.calendar');
+Route::get('my-bookings/history', [BookingController::class, 'history'])->name('bookings.history');
+Route::get('my-bookings/{booking}/review', [BookingController::class, 'createReview'])->name('bookings.review'); // 👈
+Route::get('my-bookings/{booking}', [BookingController::class, 'show'])->name('bookings.show');
+Route::post('my-bookings/{booking}/cancel', [BookingController::class, 'cancel'])->name('bookings.cancel');
 });
 
 Route::middleware(['auth', 'verified', 'role:business_owner'])->group(function () {

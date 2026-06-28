@@ -124,4 +124,58 @@ class BookingController extends Controller
 
         return back()->with('status', 'Booking cancelled.');
     }
+    public function calendar(Request $request): View
+    {
+        $upcomingBookings = $request->user()->bookings()
+            ->with(['listing', 'business'])
+            ->whereIn('status', ['pending', 'confirmed'])
+            ->orderBy('check_in')
+            ->get();
+
+        return view('bookings.calendar', compact('upcomingBookings'));
+    }
+
+public function history(Request $request): View
+{
+    $user = $request->user();
+
+    $completedCount = $user->bookings()->where('status', 'completed')->count();
+    $cancelledCount = $user->bookings()->where('status', 'cancelled')->count();
+    $noShowCount    = $user->bookings()->where('status', 'no_show')->count();
+
+    $totalSpent = $user->bookings()
+        ->where('status', 'completed')
+        ->sum('total_price');
+
+    $uniquePlaces = $user->bookings()
+        ->whereIn('status', ['completed', 'cancelled', 'no_show'])
+        ->distinct()
+        ->count('listing_id');
+
+    // Group bookings by month label for the blade's @forelse loop
+    $bookingsByMonth = $user->bookings()
+        ->with(['listing', 'business', 'review'])
+        ->whereIn('status', ['completed', 'cancelled', 'no_show'])
+        ->latest('check_in')
+        ->get()
+        ->groupBy(fn ($b) => $b->check_in->format('F Y'));  // e.g. "June 2026"
+
+    // Keep paginated version for the pagination links at the bottom
+    $bookings = $user->bookings()
+        ->with(['listing', 'business', 'review'])
+        ->whereIn('status', ['completed', 'cancelled', 'no_show'])
+        ->latest('check_in')
+        ->paginate(10);
+
+    return view('bookings.history', compact(
+        'bookings',
+        'bookingsByMonth',
+        'completedCount',
+        'cancelledCount',
+        'noShowCount',
+        'totalSpent',
+        'uniquePlaces',
+    ));
+}
+    
 }

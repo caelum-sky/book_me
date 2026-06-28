@@ -1,41 +1,77 @@
 <x-layout title="My Bookings">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <h1 class="text-2xl font-bold text-white mb-8">My Bookings</h1>
 
-        @forelse($bookings as $booking)
-            <a href="{{ route('bookings.show', $booking) }}" class="block bg-zinc-900 border border-zinc-800 rounded-xl p-4 mb-3 hover:border-zinc-700 transition">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <div class="font-medium text-zinc-100">{{ $booking->listing->title }}</div>
-                        <div class="text-sm text-zinc-500 mt-0.5">
-                            {{ $booking->business->name }} &middot;
-                            {{ $booking->check_in->format('M j, Y') }}
-                            @if($booking->check_out)
-                                &mdash; {{ $booking->check_out->format('M j, Y') }}
-                            @endif
-                        </div>
-                        <div class="text-sm text-zinc-400 mt-1">₱{{ number_format($booking->total_price, 0) }}</div>
-                    </div>
-                    <span class="text-xs font-medium px-2.5 py-1 rounded-full
-                        @class([
-                            'bg-green-950/50 text-green-400' => $booking->status === 'confirmed',
-                            'bg-amber-950/50 text-amber-400' => $booking->status === 'pending',
-                            'bg-zinc-800 text-zinc-400' => in_array($booking->status, ['completed']),
-                            'bg-red-950/50 text-red-400' => in_array($booking->status, ['cancelled', 'rejected', 'no_show']),
-                        ])">
-                        {{ ucfirst(str_replace('_', ' ', $booking->status)) }}
-                    </span>
-                </div>
-            </a>
-        @empty
-            <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-8 text-center">
-                <p class="text-zinc-400 mb-4">You haven't made any bookings yet.</p>
-                <a href="{{ route('listings.index') }}" class="text-blue-400 hover:text-blue-300 text-sm font-medium">Browse listings &rarr;</a>
-            </div>
-        @endforelse
-
-        <div class="mt-6">
-            {{ $bookings->links() }}
-        </div>
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px;">
+    <div>
+        <h1 style="font-size:22px;font-weight:700;">My Bookings</h1>
+        <p style="color:var(--text-secondary);font-size:13px;margin-top:4px;">All your reservation requests in one place.</p>
     </div>
+    <a href="{{ route('listings.index') }}" class="bm-btn primary sm">+ New booking</a>
+</div>
+
+{{-- Status filter tabs --}}
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;">
+    @php $statuses = ['all','pending','confirmed','completed','cancelled','rejected']; @endphp
+    @foreach($statuses as $s)
+        <a href="{{ route('bookings.index', $s !== 'all' ? ['status' => $s] : []) }}"
+           class="bm-tab {{ (request('status', 'all') === $s) ? 'active' : '' }}">
+            {{ ucfirst($s) }}
+        </a>
+    @endforeach
+</div>
+
+<div class="bm-card">
+    @forelse($bookings as $booking)
+        <a href="{{ route('bookings.show', $booking) }}" class="bm-list-row">
+            <div style="display:flex;align-items:center;gap:14px;flex:1;min-width:0;">
+                {{-- Image thumbnail --}}
+                <div style="width:52px;height:52px;border-radius:10px;overflow:hidden;background:var(--panel-3);flex-shrink:0;">
+                    @if($booking->listing->primaryImage())
+                        <img src="{{ $booking->listing->primaryImage()->url() }}" style="width:100%;height:100%;object-fit:cover;">
+                    @else
+                        <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--text-tertiary);">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                        </div>
+                    @endif
+                </div>
+                <div class="bm-row-info" style="min-width:0;">
+                    <div class="name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ $booking->listing->title }}</div>
+                    <div class="meta">
+                        {{ $booking->business->name }} ·
+                        {{ $booking->check_in->format('M j, Y') }}
+                        @if($booking->check_out) — {{ $booking->check_out->format('M j, Y') }} @endif
+                    </div>
+                    <div style="font-size:13px;color:var(--text-secondary);margin-top:3px;font-weight:600;">
+                        ₱{{ number_format($booking->total_price, 0) }}
+                    </div>
+                </div>
+            </div>
+            @php
+                $badge = match($booking->status) {
+                    'confirmed' => 'badge-green', 'pending' => 'badge-amber',
+                    'completed' => 'badge-gray', default => 'badge-red',
+                };
+            @endphp
+            <span class="bm-row-badge {{ $badge }}">{{ ucfirst(str_replace('_',' ',$booking->status)) }}</span>
+        </a>
+    @empty
+        <div class="bm-empty">
+            <div class="icon">
+                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            </div>
+            @if(request('status') && request('status') !== 'all')
+                No {{ request('status') }} bookings found.
+            @else
+                You haven't made any bookings yet.
+            @endif
+            <div style="margin-top:12px;">
+                <a href="{{ route('listings.index') }}" class="bm-btn primary sm">Browse listings</a>
+            </div>
+        </div>
+    @endforelse
+</div>
+
+@if($bookings->hasPages())
+    <div style="margin-top:24px;">{{ $bookings->links() }}</div>
+@endif
+
 </x-layout>

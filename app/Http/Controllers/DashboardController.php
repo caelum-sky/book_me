@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Booking;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -11,6 +12,12 @@ class DashboardController extends Controller
     {
         $user = $request->user();
 
+        $totalBookings = Booking::where('user_id', $user->id)->count();
+
+        $totalSpent = Booking::where('user_id', $user->id)
+            ->where('status', 'completed')
+            ->sum('total_price');
+
         $upcomingBookings = $user->bookings()
             ->with(['listing', 'business'])
             ->upcoming()
@@ -18,13 +25,21 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
-        $pastBookings = $user->bookings()
+        $upcomingCount = $upcomingBookings->count();
+
+        $recentBookings = $user->bookings()
             ->with(['listing', 'business'])
             ->whereIn('status', ['completed', 'cancelled', 'no_show'])
             ->latest('check_in')
             ->limit(5)
             ->get();
 
-        return view('dashboard.customer', compact('upcomingBookings', 'pastBookings'));
+        return view('dashboard.customer', compact(
+            'totalBookings',
+            'totalSpent',
+            'upcomingBookings',
+            'upcomingCount',
+            'recentBookings',
+        ));
     }
 }
