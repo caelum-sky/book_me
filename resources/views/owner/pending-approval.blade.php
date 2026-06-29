@@ -1,48 +1,36 @@
-<x-layout title="Pending Approval">
-    <div class="max-w-md mx-auto px-4 py-16 text-center">
-        <div class="w-16 h-16 bg-amber-950/50 rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg class="w-8 h-8 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-        </div>
+<x-dashboard-layout title="Pending Approval" active="dashboard" subheading="Your owner account is not fully active yet.">
+    <div class="bm-list-card" style="max-width:680px;">
+        <div class="bm-empty">
+            <div class="icon">
+                <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
+            </div>
 
-        @if(!$user->business)
-            <h1 class="text-2xl font-bold mb-2 text-white">Set up your business</h1>
-            <p class="text-zinc-400 text-sm mb-8">
-                Before you can list rooms, units, or tables, tell us about your business.
-                A super-admin will review it before you get full access.
-            </p>
-            <a href="{{ route('owner.business.create') }}" class="block w-full bg-blue-600 text-white rounded-lg py-2.5 text-sm font-medium hover:bg-blue-500 transition">
-                Set up business profile
-            </a>
-        @elseif($user->isPendingApproval())
-            <h1 class="text-2xl font-bold mb-2 text-white">Awaiting approval</h1>
-            <p class="text-zinc-400 text-sm mb-8">
-                Your business profile <strong class="text-zinc-200">{{ $user->business->name }}</strong> has been submitted
-                and is currently under review by our team. You'll get full access to manage listings,
-                bookings, and your calendar once approved.
-            </p>
-        @elseif($user->approval_status === 'rejected')
-            <h1 class="text-2xl font-bold mb-2 text-white">Application rejected</h1>
-            <p class="text-zinc-400 text-sm mb-4">
-                Unfortunately your business application wasn't approved.
-            </p>
-            @if($user->rejection_reason)
-                <div class="rounded-lg bg-red-950/50 border border-red-900 text-red-400 px-4 py-3 text-sm mb-6 text-left">
-                    {{ $user->rejection_reason }}
-                </div>
+            @if(!$user->business)
+                <h2 style="font-size:20px;font-weight:800;margin:0 0 8px;color:var(--text-primary);">Set up your business</h2>
+                <p style="margin:0 auto 22px;max-width:460px;line-height:1.6;">
+                    Before you can list rooms, units, or tables, tell us about your business.
+                    A super-admin will review it before you get full access.
+                </p>
+                <a href="{{ route('owner.business.create') }}" class="bm-btn primary">Set up business profile</a>
+            @elseif($user->isPendingApproval())
+                <h2 style="font-size:20px;font-weight:800;margin:0 0 8px;color:var(--text-primary);">Awaiting approval</h2>
+                <p style="margin:0 auto;max-width:480px;line-height:1.6;">
+                    Your business profile <strong style="color:var(--text-primary);">{{ $user->business->name }}</strong>
+                    is under review. You will get full access to manage listings, bookings, and calendars once approved.
+                </p>
+            @elseif($user->approval_status === 'rejected')
+                <h2 style="font-size:20px;font-weight:800;margin:0 0 8px;color:var(--text-primary);">Application rejected</h2>
+                <p style="margin:0 auto 16px;max-width:440px;line-height:1.6;">Your business application was not approved.</p>
+                @if($user->rejection_reason)
+                    <div class="bm-alert error" style="text-align:left;margin-bottom:18px;">
+                        <span>{{ $user->rejection_reason }}</span>
+                    </div>
+                @endif
+                <p style="font-size:12.5px;color:var(--text-tertiary);margin:0;">Contact support if you believe this was a mistake.</p>
+            @elseif($user->approval_status === 'suspended')
+                <h2 style="font-size:20px;font-weight:800;margin:0 0 8px;color:var(--text-primary);">Account suspended</h2>
+                <p style="margin:0 auto;max-width:420px;line-height:1.6;">Your business account has been suspended. Contact support for details.</p>
             @endif
-            <p class="text-zinc-500 text-xs">Contact support if you believe this was a mistake.</p>
-        @elseif($user->approval_status === 'suspended')
-            <h1 class="text-2xl font-bold mb-2 text-white">Account suspended</h1>
-            <p class="text-zinc-400 text-sm mb-8">Your business account has been suspended. Contact support for details.</p>
-        @endif
-
-        <form method="POST" action="{{ route('logout') }}" class="mt-3">
-            @csrf
-            <button type="submit" class="w-full border border-zinc-700 text-zinc-200 rounded-lg py-2.5 text-sm font-medium hover:bg-zinc-800 transition">
-                Log out
-            </button>
-        </form>
+        </div>
     </div>
-</x-layout>
+</x-dashboard-layout>

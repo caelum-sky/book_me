@@ -5,35 +5,40 @@
     instead of a sidebar, since guests have no account/role context.
 --}}
 @props(['title' => 'BookMe'])
+@php
+    $user = auth()->user();
+    $dashboardRoute = null;
+
+    if ($user) {
+        $dashboardRoute = $user->isSuperAdmin()
+            ? route('admin.dashboard')
+            : ($user->isBusinessOwner()
+                ? ($user->isApproved() ? route('owner.dashboard') : route('owner.pending-approval'))
+                : route('dashboard'));
+    }
+@endphp
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $title }} — BookMe</title>
+    <title>{{ $title }} - BookMe</title>
     @vite(['resources/css/app.css', 'resources/css/dashboard.css', 'resources/js/app.js'])
-    <style>
-/* Add this near the existing .bm-auth-logo rule in resources/css/dashboard.css */
-    .bm-auth-logo {
-    margin-left: auto;
-    margin-right: auto;
-    }
-    </style>
 </head>
 <body class="bm-body">
 <div class="bm-page">
-    <div class="bm-shell" style="grid-template-columns: 1fr; max-width:1240px;">
+    <div class="bm-shell bm-public-shell">
 
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-            <a href="{{ route('home') }}" style="display:flex;align-items:center;gap:10px;text-decoration:none;">
+        <div class="bm-public-nav">
+            <a href="{{ route('home') }}" class="bm-brand-link">
                 <span class="bm-logo">B</span>
-                <span style="font-size:16px;font-weight:700;color:var(--text-primary);">BookMe</span>
+                <span>BookMe</span>
             </a>
 
-            <div style="display:flex;align-items:center;gap:10px;">
+            <div class="bm-public-actions">
                 @auth
-                    <a href="{{ auth()->user()->isSuperAdmin() ? route('admin.dashboard') : (auth()->user()->isBusinessOwner() ? route('owner.dashboard') : route('dashboard')) }}" class="bm-btn secondary sm">
+                    <a href="{{ $dashboardRoute }}" class="bm-btn secondary sm">
                         Dashboard
                     </a>
                 @else
@@ -63,7 +68,7 @@
 
         <div class="bm-footer-bar">
             <span>&copy; {{ date('Y') }} BookMe. All rights reserved.</span>
-            <span>Dorms · Houses · Pads · Hotels · Inns · Motels · Restaurants</span>
+            <span>Dorms &middot; Houses &middot; Pads &middot; Hotels &middot; Inns &middot; Motels &middot; Restaurants</span>
         </div>
     </div>
 </div>

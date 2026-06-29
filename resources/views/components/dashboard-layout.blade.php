@@ -20,7 +20,7 @@
     $user = auth()->user();
     $role = $user->role ?? 'customer';
 
-    // Per-role nav icon sets: [key => [route name or '#', label, svg path]]
+    // Per-role nav icon sets: [key => [route name, label, svg path]]
     $navByRole = [
         'customer' => [
             ['key' => 'dashboard', 'route' => 'dashboard', 'label' => 'Overview',
@@ -55,6 +55,17 @@
         ],
     ];
 
+    if ($role === 'business_owner' && ! $user?->isApproved()) {
+        $navByRole['business_owner'] = [
+            ['key' => 'dashboard', 'route' => 'owner.pending-approval', 'label' => 'Approval',
+                'svg' => '<path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/>'],
+            ['key' => 'business', 'route' => $user?->business ? 'owner.pending-approval' : 'owner.business.create', 'label' => $user?->business ? 'Status' : 'Business',
+                'svg' => '<path d="M3 9.5 12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1Z"/>'],
+            ['key' => 'profile', 'route' => 'profile.edit', 'label' => 'Profile',
+                'svg' => '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/>'],
+        ];
+    }
+
     $navItems = $navByRole[$role] ?? $navByRole['customer'];
     $heading = $heading ?? $title;
 
@@ -64,7 +75,7 @@
 
     $roleLabels = [
         'customer' => 'Customer',
-        'business_owner' => 'Business Owner',
+        'business_owner' => $user?->isApproved() ? 'Business Owner' : 'Owner Setup',
         'super_admin' => 'Super Admin',
     ];
     $roleLabel = $roleLabels[$role] ?? 'Account';
@@ -75,12 +86,12 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $title }} — BookMe</title>
+    <title>{{ $title }} - BookMe</title>
     @vite(['resources/css/app.css', 'resources/css/dashboard.css', 'resources/js/app.js', 'resources/js/bm-modal.js'])
 </head>
 <body class="bm-body">
 <div class="bm-page">
-    <div class="bm-shell" style="grid-template-columns: 220px 1fr {{ isset($rail) ? '320px' : '' }};">
+    <div class="bm-shell {{ isset($rail) ? 'has-rail' : '' }}">
 
         <div class="bm-sidebar">
             <a href="{{ route('home') }}" class="bm-logo-row">
@@ -111,7 +122,7 @@
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>
                     <span class="label">Profile</span>
                 </a>
-                @if($role === 'business_owner')
+                @if($role === 'business_owner' && $user?->isApproved())
                     <a href="{{ route('owner.business.edit') }}" class="bm-nav-icon {{ $active === 'settings' ? 'active' : '' }}">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.55V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 9 19.36a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.64 15a1.7 1.7 0 0 0-1.55-1.03H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.64 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.64a1.7 1.7 0 0 0 1.03-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1.03 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.36 9a1.7 1.7 0 0 0 1.55 1.03H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1.03Z"/></svg>
                         <span class="label">Settings</span>
@@ -148,7 +159,7 @@
                 <div class="bm-topbar-actions">
                     <div class="bm-avatar" title="{{ $user->name ?? '' }}" style="overflow:hidden;">
                     @if($user && $user->avatarUrl())
-                        <img src="{{ $user->avatarUrl() }}" style="width:100%;height:100%;object-fit:cover;">
+                        <img src="{{ $user->avatarUrl() }}" alt="{{ $user->name }}" style="width:100%;height:100%;object-fit:cover;">
                     @else
                         {{ $initials }}
                     @endif
@@ -176,7 +187,7 @@
 
             <div class="bm-footer-bar">
                 <span>&copy; {{ date('Y') }} BookMe. All rights reserved.</span>
-                <span>Dorms · Houses · Pads · Hotels · Inns · Motels · Restaurants</span>
+                <span>Dorms &middot; Houses &middot; Pads &middot; Hotels &middot; Inns &middot; Motels &middot; Restaurants</span>
             </div>
         </div>
 
